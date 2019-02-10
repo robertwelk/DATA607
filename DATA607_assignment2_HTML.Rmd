@@ -1,0 +1,80 @@
+---
+title: "DATA607 - Assignment 2"
+author: "Rob Welk"
+date: "February 10, 2019"
+output: html_document
+---
+This document shows how to retrieve tables from a MySQL database (v.8.0.12) and use relational tables in tidyverse.  
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Load packages
+```{r load-needed-packages, eval=T, message=FALSE}
+library(dbConnect)
+library(RMySQL)
+library(tidyverse)
+```
+
+
+#Establish the conncection with MySQL
+
+permissions for user 'DATA606' were provided in the SQL script on GitHub
+```{r connect, eval=T}
+mydb = dbConnect(MySQL(), user= "DATA606", host= "127.0.0.1", password= "abc123", dbname= "movie ratings", port=3306)
+```
+
+**List the tables in the schmema**   
+There are 3 related table in this database.  
+'ratings' provides a a rating from 1-5 for each movie given by each reviewer  
+'reviewers' provides information on each movie reviewer  
+'movie' provides information for each title  
+
+**Find tables available in the schema**  
+```{r, eval=T}
+
+dbListTables(mydb)
+```
+
+**Find fields within a table**
+```{r, eval=TRUE}
+dbListFields(mydb, 'ratings') 
+```
+
+#Retrieving tables from MySQL
+*&Send a query to MySQL for each table and store result as a tibble**
+```{r,eval=T}
+q1 <- dbSendQuery(mydb, 'select * from ratings')
+ratings <- as_tibble(fetch(q1, n=-1))
+ratings
+
+q2 <- dbSendQuery(mydb, 'select * from movies')
+movies <- as_tibble(fetch(q2,n=-1))
+movies
+
+q3 <- dbSendQuery(mydb, 'select * from reviewers')
+reviewers <- as_tibble(fetch(q3,n=-1))
+reviewers
+```
+
+#Using relational tables in tidyverse  
+
+*Which title had the highest average rating?*
+```{r}
+ratings %>% group_by(MovieID) %>% summarise('avg'=mean(Rating)) %>% left_join(movies, by="MovieID") %>% filter(avg==max(avg)) %>% select(Title)
+```
+
+*How many perfect ratings were there? Which movies and who gave the the review?*
+```{r}
+ratings %>% left_join(movies,by="MovieID") %>% left_join(reviewers,by="ReviewerID") %>% filter(Rating==5) %>% select(Rating,Title,Name) %>% arrange(Title)
+```
+
+*There were two documentaries about the failed Fyre Festival - how did ratings vary by reviewer*
+```{r, eval=TRUE}
+ratings %>% left_join(movies,by="MovieID") %>% left_join(reviewers,by="ReviewerID") %>% 
+  filter(Title=="Fyre" | Title=="Fyre Fraud") %>%
+  ggplot(aes(x=Name, y=Rating, fill=Title)) + geom_bar(stat="identity", position='dodge')
+```
+
+
