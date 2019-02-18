@@ -1,0 +1,91 @@
+---
+title: "DATA607 - HW#3"
+author: "Rob Welk"
+date: "February 13, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Original problem
+```{r}
+library(stringr)
+raw.data <- "555-1239Moe Szyslak (636) 555-0113Burns, C. Montgomery555-6542Rev. Timothy Lovejoy555 8904Ned Flanders636-555-3226Simpson, Homer5553642Dr. Julius Hibbert"
+
+#code given by Munzert etal. to extract names of characters
+names <- unlist(str_extract_all(raw.data, "[[:alpha:]., ]{2,}"))
+
+```
+
+#3.a Rearrange vector so that all names conform to first_name last_name standard.
+```{r}
+# remove titles from rev. lovejoy and dr. hibbert  
+# pattern: titles have periods and are at least 2 letters
+names2 <- str_replace(names, "[:alpha:]{2,3}\\.", "")
+
+# switch order for homer and burns
+# pattern: in last_name, first_name notation there is a comma always
+# detect this pattern in the vector by looping through the character vector and applying conditional logic 
+# if it exists, split the string at the comma then switch the order
+
+for(i in 1:length(names)){
+  if(str_detect(names2[i],",")){
+  spl <- str_split(names2[i],",")
+  names2[i] <- str_c(spl[[1]][2]," ",spl[[1]][1])
+  }
+}
+firstname_lastname <- str_trim(names2, side="both")
+firstname_lastname
+```
+
+#3.b Contsruct a logical vector indicating whether the character has a title.
+```{r}
+# detect the pattern
+title.names <- str_detect(names, "[:alpha:]{2,3}\\.")
+# name the vector
+names(title.names) <- firstname_lastname
+title.names
+```
+
+#3.c Construct a logical vector indicating whether a character has a second name.
+```{r}
+#pattern: a character with a second name will have more than two groups of text when split by blank space
+second.name <- sapply(str_split(firstname_lastname, " "), length) > 2
+names(second.name) <- firstname_lastname
+second.name
+
+```
+
+
+#4. Describe the types of strings that conform to the following regular expressions and construct an example that is matched by the regex
+
+```{r}
+#(a) any integer with a dollar sign at the end
+pattern.a <- "[0-9]+\\$"
+example.a <- "4235$"
+str_extract(example.a, pattern.a)
+
+```
+
+```{r}
+# (b) a literal b then any lowercase letter (1 to 4 of them) followed by another b 
+pattern.b <- "\\b[a-z]{1,4}\\b"
+example.b <- "barb"
+str_extract(example.b, pattern.b)
+```
+
+```{r}
+#(c) any character 0 or more times then a literal dot then 'txt'
+pattern.c <-  ".*\\.txt$"
+example.c <- "anything.txt"
+str_extract(example.c, pattern.c)
+```
+```{r}
+
+#(d) a two digit number /  a two digit number / a four digit number
+pattern.d <- "\\d{2}/\\d{2}/\\d{4}"
+example.d <- "07/14/1984"
+str_extract(example.d, pattern.d)
+```
