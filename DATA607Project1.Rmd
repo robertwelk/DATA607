@@ -16,13 +16,19 @@ A document contianing information from a chess tournament is provided as an unst
 ```{r, echo=F}
 library(readr)
 library(tidyverse)
+library(httr)
 ```
 
 # Load tournament results text file
 The file can be loaded with with the read.table function as demonstrated below once the 'tournament.txt' file is  
 ```{r}
-setwd("C:/Users/robbj/CUNY SPS/DATA607")
-data.in <- read.table('tournamentinfo.txt', header = FALSE, sep = ",") %>% unlist() %>% str_remove_all('-')
+
+
+#data.in <- read.table('https://raw.github.com/robertwelk/DATA607/tournamentinfo.txt', header = FALSE, sep = ",") %>% unlist() %>% str_remove_all('-')
+
+#data.in <- read_csv('https://raw.github.com/robertwelk/DATA607/tournamentinfo.txt', header = FALSE, sep = ",") %>% unlist() %>% str_remove_all('-')
+
+test <- read_csv('tournamentinfo.txt')
 
 #remove the header lines (1-4) and take a look at the structure of the object
 raw.data <- data.in[-c(1:4)]
