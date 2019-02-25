@@ -1,34 +1,29 @@
 ---
 title: "DATA607 - Project 1"
 author: "Rob Welk"
-date: "February 20, 2019"
+date: "February 24, 2019"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo =FALSE)
+knitr::opts_chunk$set(echo =TRUE)
 ```
 
 #Problem Statement
-A document contianing information from a chess tournament is provided as an unstructured text file. The code below attempts to tidy the string data into a normalized table that is exported as a comma separated value table.  The information to extract for each chess player includes name, state, pre torunament rating, points accumulated during the tournament, and average rating of the seven opponants faced during the tournament. The raw data can be located at the GitHub repository.   
+A document contianing information from a chess tournament is provided as an unstructured text file. The code below attempts to tidy the raw string data into a normalized table that is exported as a comma separated value file.  The information to extract for each chess player includes name, state, pre-torunament rating, points accumulated during the tournament, and average rating of the seven opponents faced during the tournament. Tidyverse packages including dplyr and stringr are primarily used to tidy the dataset. The raw data can be located at the GitHub repository and was loaded using version control in an R Studio Project.   
 
 # Load Packages
-```{r, echo=F}
+```{r, message=FALSE}
 library(readr)
 library(tidyverse)
-library(httr)
 ```
 
 # Load tournament results text file
-The file can be loaded with with the read.table function as demonstrated below once the 'tournament.txt' file is  
+The file can be loaded with with the read.table function 
+
 ```{r}
-
-
-#data.in <- read.table('https://raw.github.com/robertwelk/DATA607/tournamentinfo.txt', header = FALSE, sep = ",") %>% unlist() %>% str_remove_all('-')
-
-#data.in <- read_csv('https://raw.github.com/robertwelk/DATA607/tournamentinfo.txt', header = FALSE, sep = ",") %>% unlist() %>% str_remove_all('-')
-
-test <- read_csv('tournamentinfo.txt')
+# Load the file directly from GitHub repository and remove unneeded dashes
+data.in <- read.table('tournamentinfo.txt', header = FALSE, sep = ",") %>% unlist() %>% str_remove_all('-')
 
 #remove the header lines (1-4) and take a look at the structure of the object
 raw.data <- data.in[-c(1:4)]
@@ -38,17 +33,15 @@ str(raw.data)
 
 
 # Loop through the raw.data object 
-For each of the 64 players there are 3 strings. 
-```{r}
-# There are now 192 rows, 2 strings for each of the 64 players plus a blank in between.  
-
-#create a blank table that will contain the information that is requested. 
+There are 192 rows, 2 strings for each of the 64 players plus a blank row in between.  To store the information that is requested, a for loop will be applied to the raw data object.  For each player the requested information will be extracted and stored in a blank table.  
+```{r, warning=FALSE}
+#create a blank table that will contain the information 
 table.store <- matrix(nrow=64, ncol=6, NA) %>% as_tibble() 
 colnames(table.store) <- c('PlayerID', 'PlayerName', 'State','Points', 'PreRating','OpponentRating')
 
-# In this loop 
 for (i in 1:64){
   
+  #This will select only the information regarding a single player
   player.info <- str_c(raw.data[(i*3)-2],raw.data[(i*3)-1]) %>% str_split('\\|') %>% unlist()
   
   #playerID 
@@ -63,10 +56,12 @@ for (i in 1:64){
   table.store[i,5] <- player.info[12] %>% str_split('[:blank:]') %>% unlist() %>% str_extract_all('\\d{3,4}') %>% unlist() %>% nth(3)
   
 }
+# examine the results
 table.store
 ```
 
-# Loop again to find averge rating of each players opponents
+# One more loop 
+The only requested information that is missing is averge rating of each players opponents.
 To calculate this average, a table is made by merging each players opponents using the opponent ID field.  
 ```{r}
  
@@ -99,7 +94,7 @@ table.store
 #Export as a csv
 The table is now normalized and can be written to GitHub as a .csv
 ```{r}
-write.csv(table.store, "C:/Users/robbj/CUNY SPS/DATA607/ChessResults.csv" )
+write.csv(table.store, "TournamentResults.csv" )
 ``` 
 
 
