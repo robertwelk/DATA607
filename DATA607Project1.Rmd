@@ -1,5 +1,5 @@
 ---
-title: "DATA607 - Project 1"
+title: "DATA607: Project 1"
 author: "Rob Welk"
 date: "February 24, 2019"
 output: html_document
@@ -83,12 +83,12 @@ for (i in 1:64){
   opp.table$PlayerID <- as.numeric(opp.id)
   
   #join opponents pre rating to opponent id 
-  opp.table$OppScore <- left_join(opp.table, table.store, by = 'PlayerID') %>%           select(PreRating) %>% unlist() %>% as.numeric() 
+  opp.table$OppScore <- left_join(opp.table, table.store, by = 'PlayerID') %>% select(PreRating) %>% unlist() %>% as.numeric() 
 
   #find the mean of OppScore and write to the main storage table 
   table.store[i,6] <- mean(opp.table$OppScore) %>% round(0)
 }
-table.store
+table.store %>% print(n=64)
 ```
 
 #Export as a csv
@@ -98,7 +98,7 @@ write.csv(table.store, "TournamentResults.csv" )
 ``` 
 
 
-#Award Ceremony
+#Best Player of the Tournament
 Based on the results, which player had the strongest tournament?  This should be considered the player that tallied the most points while facing the strongest competition.
 
 ```{r}
